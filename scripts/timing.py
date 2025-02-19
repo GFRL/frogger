@@ -25,6 +25,15 @@ from frogger.sampling import (
 from frogger.solvers import Frogger, FroggerConfig
 from frogger.utils import timeout
 
+import os
+import argparse
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--obj_name", type=str, default="core_bottle_1a7ba1f4c892e2da30711cdbdbc73924")
+argparser.add_argument("--obj_scale", type=float, default=0.06)
+argparser.add_argument("--Trail_id", type=int, default=0)
+argparser.add_argument("--save_root", type=str, default="../results")
+args=argparser.parse_args()
+save_root = args.save_root
 # [Feb. 22, 2024] suppress annoying torch warning about LUSolve from qpth
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -42,51 +51,7 @@ model_sampler_pairs = [
 ]
 
 # all objects from paper
-obj_names = [
-    "001_chips_can",
-    "002_master_chef_can",
-    "003_cracker_box",
-    "004_sugar_box",
-    "005_tomato_soup_can",
-    "006_mustard_bottle",
-    "007_tuna_fish_can",
-    "008_pudding_box",
-    "009_gelatin_box",
-    "010_potted_meat_can",
-    "011_banana",
-    "012_strawberry",
-    "013_apple",
-    "014_lemon",
-    "015_peach",
-    "016_pear",
-    "017_orange",
-    "018_plum",
-    "021_bleach_cleanser",
-    "036_wood_block",
-    "043_phillips_screwdriver",
-    "044_flat_screwdriver",
-    "048_hammer",
-    "051_large_clamp",
-    "052_extra_large_clamp",
-    "054_softball",
-    "055_baseball",
-    "056_tennis_ball",
-    "057_racquetball",
-    "058_golf_ball",
-    "061_foam_brick",
-    "065-a_cups",
-    "065-b_cups",
-    "065-c_cups",
-    "065-d_cups",
-    "065-e_cups",
-    "065-f_cups",
-    "065-g_cups",
-    "065-h_cups",
-    "065-i_cups",
-    "065-j_cups",
-    "077_rubiks_cube",
-    "sns_cup",
-]
+obj_names = [args.obj_name]
 
 tot_setup_time = 0.0
 tot_gen_time = 0.0
@@ -116,7 +81,8 @@ if __name__ == "__main__":
             start = time.time()
 
             # loading object
-            mesh = trimesh.load(ROOT + f"/data/{obj_name}/{obj_name}_clean.obj")
+            mesh = trimesh.load(f"../assets/DGNObj/{obj_name}/mesh/simplified.obj")
+            mesh.apply_scale(args.obj_scale)
             bounds = mesh.bounds
             lb_O = bounds[0, :]
             ub_O = bounds[1, :]
@@ -221,7 +187,9 @@ if __name__ == "__main__":
 
             # timing test
             sub_time = 0.0
-            for _ in range(NUM_SAMPLES):
+            save_dir=os.path.join(save_root,obj_name,f"scale{int(100*args.obj_scale):03d}")
+            os.makedirs(save_dir,exist_ok=True)
+            for id in range(NUM_SAMPLES):
                 start = time.time()
                 try:
                     q_star = timeout(TIMEOUT_PERIOD_SEC)(
@@ -243,6 +211,17 @@ if __name__ == "__main__":
                 # visualize the grasp if requested
                 if VIZ:
                     model.viz_config(q_star)
+                
+                save_path=os.path.join(save_dir,f"{id}.npy")
+                q_star=np.array(q_star).reshape(-1)#(4+3+qpos)
+                save_dict = {
+                    "obj_scale": args.obj_scale,
+                    "obj_pose": np.array([translation, 0.0, -lb_O[-1],1.0,0.0,0.0,0.0]),
+                    'obj_path': os.path.join("assets/DGNObj",obj_name),
+                    "grasp_qpos": np.concatenate([q_star[4:7],q_star[0:4],q_star[7:]]),
+                    "grasp_error": 0.0,
+                }
+                np.save(save_path,save_dict,allow_pickle=True)
 
             print(f"    grasp generation time: {end - start}")
             tot_gen_time += sub_time

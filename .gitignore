@@ -18,3 +18,6 @@ metadata
 
 # license files
 *.lic
+*top_analysis.py
+*time_schedule.py
+results/*

@@ -18,7 +18,7 @@ from skimage.measure import marching_cubes
 from frogger import ROOT
 from frogger.sdfs import poisson_reconstruction
 
-jax.config.update("jax_platform_name", "cpu")  # force everything to run on CPU
+jax.config.update("jax_platform_name", "cuda:1")  # force everything to run on CPU
 jax.config.update("jax_enable_x64", True)
 jax.config.update("jax_debug_nans", True)  # errors out when encountering nans
 
@@ -405,13 +405,13 @@ class ObjectDescription(ABC):
 
         # we may already have true collision geometry. if not, generate it.
         self.shape_collision_list = []
-        true_collision_geom_path = Path(ROOT + f"/data/{self.name}/collisions")
+        true_collision_geom_path = Path(f"../assets/DGNObj/{self.name}/urdf/meshes")
         if true_collision_geom_path.exists():
             mesh_col = _mesh_viz
 
             n_files = len(list(true_collision_geom_path.iterdir()))
             for i in range(n_files):
-                pth = ROOT + f"/data/{self.name}/collisions/{self.name}_col_{i}.obj"
+                pth = f"../assets/DGNObj/{self.name}/urdf/meshes/convex_piece_{i:03d}.obj"
                 mesh_col_i = Convex(pth)
                 self.shape_collision_list.append(mesh_col_i)
         else:
