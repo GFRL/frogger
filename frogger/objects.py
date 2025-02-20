@@ -405,13 +405,13 @@ class ObjectDescription(ABC):
 
         # we may already have true collision geometry. if not, generate it.
         self.shape_collision_list = []
-        true_collision_geom_path = Path(f"../assets/DGNObj/{self.name}/urdf/meshes")
+        true_collision_geom_path = Path(f"../assets/object/DGN_obj/processed_data/{self.name}/urdf/meshes")
         if true_collision_geom_path.exists():
             mesh_col = _mesh_viz
 
             n_files = len(list(true_collision_geom_path.iterdir()))
             for i in range(n_files):
-                pth = f"../assets/DGNObj/{self.name}/urdf/meshes/convex_piece_{i:03d}.obj"
+                pth = f"../assets/object/DGN_obj/processed_data/{self.name}/urdf/meshes/convex_piece_{i:03d}.obj"
                 mesh_col_i = Convex(pth)
                 self.shape_collision_list.append(mesh_col_i)
         else:

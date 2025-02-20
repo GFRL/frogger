@@ -55,7 +55,7 @@ obj_names = [args.obj_name]
 
 tot_setup_time = 0.0
 tot_gen_time = 0.0
-TIMEOUT_PERIOD_SEC = 60.0  # [EDIT THIS] the number of seconds to wait before timing out
+TIMEOUT_PERIOD_SEC = 10.0  # [EDIT THIS] the number of seconds to wait before timing out
 NUM_SAMPLES = 20  # [EDIT THIS] number of grasps to sample per object
 EVAL = False  # [EDIT THIS] whether to eval the grasps on min-weight/Ferrari-Canny
 VIZ = False  # [EDIT THIS] whether to visualize the results every grasp
@@ -81,7 +81,7 @@ if __name__ == "__main__":
             start = time.time()
 
             # loading object
-            mesh = trimesh.load(f"../assets/DGNObj/{obj_name}/mesh/simplified.obj")
+            mesh = trimesh.load(f"../assets/object/DGN_obj/processed_data/{obj_name}/mesh/simplified.obj")
             mesh.apply_scale(args.obj_scale)
             bounds = mesh.bounds
             lb_O = bounds[0, :]
@@ -217,7 +217,7 @@ if __name__ == "__main__":
                 save_dict = {
                     "obj_scale": args.obj_scale,
                     "obj_pose": np.array([translation, 0.0, -lb_O[-1],1.0,0.0,0.0,0.0]),
-                    'obj_path': os.path.join("assets/DGNObj",obj_name),
+                    'obj_path': os.path.join("assets/object/DGN_obj/processed_data",obj_name),
                     "grasp_qpos": np.concatenate([q_star[4:7],q_star[0:4],q_star[7:]]),
                     "grasp_error": 0.0,
                 }
