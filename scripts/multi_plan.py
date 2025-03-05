@@ -4,12 +4,16 @@ import multiprocessing as mp
 import os
 import json
 def call_cmd(obj_name,id,gpu_id):
+    save_path=f"../results/{obj_name}"
     for scale in [0.06,0.08,0.10,0.12]:
+        if(os.path.exists(os.path.join(save_path,f"scale{str(scale).replace('.','')}"))):
+            print("Exist!",os.path.join(save_path,f"scale{str(scale).replace('.','')}"))
+            continue
         cmd=f"python timing.py --Trail_id {id} --obj_name {obj_name} --obj_scale {scale}"
         print("Start!",cmd)
         ret=call(cmd,shell=True,timeout=100)  
         print("Done!",id)
-    return ret
+    return
 
 def main(gpu_id,obj_name_list):
     save_path="../results"
@@ -33,12 +37,12 @@ if __name__ == "__main__":
     with open(obj_list_path,"r") as f:
         obj_list=json.load(f)
     
-    cpu_id_num=6 #A computer can hold 6 processes at most
+    cpu_id_num=8 #A computer can hold 6 processes at most
     obj_list_list=[[] for i in range(cpu_id_num)]
-    for i in range(4):
+    for i in range(len(obj_list)):
         obj_list_list[i%cpu_id_num].append(obj_list[i])
     gpu_id_list=[i//2+2 for i in range(cpu_id_num)]#Useless Here, Because the code is not GPU-based
-    pool = mp.Pool(processes=cpu_id_num+1)
+    pool = mp.Pool(processes=cpu_id_num)
     Res=[pool.apply_async(main, args=(gpu_id_list[i],obj_list_list[i])) for i in range(cpu_id_num)]
     pool.close()
     pool.join()

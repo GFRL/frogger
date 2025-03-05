@@ -21,3 +21,4 @@ metadata
 *top_analysis.py
 *time_schedule.py
 results/*
+compute.py
